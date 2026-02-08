@@ -1,0 +1,57 @@
+const mysql = require("mysql2");
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+// 🟣 Create DB connection
+const db = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "root123",
+  database: "college"
+});
+
+// 🟣 Connect to DB
+db.connect((err) => {
+  if (err) {
+    console.log("Database connection failed:", err);
+  } else {
+    console.log("Connected to MariaDB!");
+  }
+});
+
+// 🟣 Test route
+app.get("/test", (req, res) => {
+  db.query("SELECT 1", (err, result) => {
+    if (err) {
+      res.send("DB Error");
+    } else {
+      res.send("DB Connected Successfully!");
+    }
+  });
+});
+
+app.post("/students", (req, res) => {
+  const { roll_no, name, department } = req.body;
+
+  const sql = "INSERT INTO students (roll_no, name, department) VALUES (?, ?, ?)";
+
+  db.query(sql, [roll_no, name, department], (err, result) => {
+    if (err) {
+      console.log("Insert Error:", err);
+      res.status(500).json({ message: "Database Insert Failed" });
+    } else {
+      res.json({ message: "Student inserted successfully" });
+    }
+  });
+});
+
+
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
+});
+    
