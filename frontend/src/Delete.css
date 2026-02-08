@@ -1,0 +1,55 @@
+.delete {
+  width: 25%;
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.delete h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.delete-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* space between inputs */
+}
+
+.delete-form input {
+  padding: 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 30%;
+}
+
+.delete-form input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.delete-form button {
+  padding: 10px;
+  font-size: 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 25%;
+}
+
+.delete-form button:hover {
+  background-color: #b02a37;
+}
+.homeButton {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+  .link{
+    textDecoration: "none",
+  }

@@ -11,7 +11,7 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "root123",
+  password: "tree123",
   database: "college"
 });
 
@@ -49,7 +49,33 @@ app.post("/students", (req, res) => {
     }
   });
 });
+app.post("/delete", (req, res) => {
+  const { username } = req.body;
 
+  db.query(
+    "SELECT * FROM students WHERE username = ?", 
+    [username],
+    (err, result) => {
+      if (err) return res.status(500).send(err);
+
+      if (result.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const deletedRecord = result[0];
+
+      db.query(
+        "DELETE FROM students WHERE username = ?",
+        [username],
+        (err) => {
+          if (err) return res.status(500).send(err);
+
+          res.json(deletedRecord);
+        }
+      );
+    }
+  );
+});
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

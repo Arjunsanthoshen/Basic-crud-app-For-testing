@@ -1,16 +1,75 @@
 import { Link } from "react-router-dom";
-
+import "./Delete.css";
+import { useState } from "react";
+import axios from "axios";  
 function Delete() {
+  const [form, setForm] = useState({
+    username: "",
+    name: "",
+    branch: "",
+    year: ""
+  });
+
+  const [deletedData, setDeletedData] = useState(null); 
+
+  function handleChange(e) {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  }
+
+  async function handleSubmit(e) {     
+    e.preventDefault();
+
+    const confirmData = window.confirm("Are you sure you want to delete?");
+    if (!confirmData) return;
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/delete", 
+        { username: form.username }
+      );
+
+      setDeletedData(response.data);  
+      alert("Data deleted successfully");
+
+    } catch (error) {
+      alert("Error deleting data");
+      console.error(error);
+    }
+  }
+
   return (
-    <div>
-      <h2>Delete Page</h2>
+    <div className="delete">
+      <h2>Delete</h2>
 
-      <br />
+      <form className="delete-form" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="username"
+          value={form.username}
+          placeholder="Username"
+          onChange={handleChange}
+        />
 
-      <Link to="/">
-        <button>Go to Home</button>
-      </Link>
+        <button type="submit">Delete</button>
+      </form>
+
+      {deletedData && (
+        <div className="deleted-info">
+          <h3>Deleted Record</h3>
+          <p>Username: {deletedData.username}</p>
+          <p>Name: {deletedData.name}</p>
+          <p>Branch: {deletedData.branch}</p>
+          <p>Year: {deletedData.year}</p>
+        </div>
+      )}
+      <Link to="/" className="link">
+              <button className="homeButton">Go to Home</button>
+            </Link>
     </div>
+    
   );
 }
 
