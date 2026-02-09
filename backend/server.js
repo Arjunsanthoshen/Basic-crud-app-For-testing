@@ -4,18 +4,19 @@ const cors = require("cors");
 
 const app = express();
 
+// 🔵 Middleware (MUST be before routes)
 app.use(cors());
 app.use(express.json());
 
-// 🟣 Create DB connection
+// 🔵 Database connection
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "root123",
-  database: "college"
+  password: "tree",
+  database: "college",
 });
 
-// 🟣 Connect to DB
+// 🔵 Connect to DB
 db.connect((err) => {
   if (err) {
     console.log("Database connection failed:", err);
@@ -24,34 +25,58 @@ db.connect((err) => {
   }
 });
 
-// 🟣 Test route
+// 🔵 Test route
 app.get("/test", (req, res) => {
-  db.query("SELECT 1", (err, result) => {
-    if (err) {
-      res.send("DB Error");
-    } else {
-      res.send("DB Connected Successfully!");
-    }
-  });
+  res.send("Backend is running");
 });
 
+// 🔵 INSERT student
 app.post("/students", (req, res) => {
   const { roll_no, name, department } = req.body;
 
-  const sql = "INSERT INTO students (roll_no, name, department) VALUES (?, ?, ?)";
+  const sql =
+    "INSERT INTO students (roll_no, name, department) VALUES (?, ?, ?)";
 
-  db.query(sql, [roll_no, name, department], (err, result) => {
+  db.query(sql, [roll_no, name, department], (err) => {
     if (err) {
       console.log("Insert Error:", err);
-      res.status(500).json({ message: "Database Insert Failed" });
+      res.status(500).json({ message: "Insert failed" });
     } else {
       res.json({ message: "Student inserted successfully" });
     }
   });
 });
 
+// 🔵 UPDATE student (FINAL + DEBUG)
+app.put("/students/update", (req, res) => {
+  console.log("UPDATE API HIT");
+  console.log("BODY:", req.body);
 
+  const { roll_no, name, department } = req.body;
+
+  const sql = `
+    UPDATE students
+    SET name = ?, department = ?
+    WHERE roll_no = ?
+  `;
+
+  db.query(sql, [name, department, roll_no], (err, result) => {
+    if (err) {
+      console.log("Update Error:", err);
+      res.status(500).json({ message: "Update failed" });
+    } else {
+      console.log("Affected rows:", result.affectedRows);
+
+      if (result.affectedRows === 0) {
+        res.json({ message: "No student found with that roll number" });
+      } else {
+        res.json({ message: "Student updated successfully" });
+      }
+    }
+  });
+});
+
+// 🔵 Start server
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
-    
