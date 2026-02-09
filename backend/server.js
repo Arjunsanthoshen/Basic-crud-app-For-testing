@@ -35,10 +35,12 @@ app.get("/test", (req, res) => {
   });
 });
 
+// 🟣 CREATE – Insert student
 app.post("/students", (req, res) => {
   const { roll_no, name, department } = req.body;
 
-  const sql = "INSERT INTO students (roll_no, name, department) VALUES (?, ?, ?)";
+  const sql =
+    "INSERT INTO students (roll_no, name, department) VALUES (?, ?, ?)";
 
   db.query(sql, [roll_no, name, department], (err, result) => {
     if (err) {
@@ -51,6 +53,7 @@ app.post("/students", (req, res) => {
 });
 app.post("/delete", (req, res) => {
   const { roll_no } = req.body;
+
 
   db.query(
     "SELECT * FROM students WHERE roll_no = ?", 
@@ -76,8 +79,20 @@ app.post("/delete", (req, res) => {
     }
   );
 });
+// 🟢 READ – Display all students  ⭐ NEW
+app.get("/students", (req, res) => {
+  const sql = "SELECT * FROM students";
 
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Fetch Error:", err);
+      res.status(500).json({ message: "Failed to fetch students" });
+    } else {
+      res.json(result);
+    }
+  });
+
+});
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
-    
