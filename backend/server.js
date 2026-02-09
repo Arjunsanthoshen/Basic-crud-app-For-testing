@@ -13,7 +13,7 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "tree",
-  database: "college",
+  database: "college"
 });
 
 // 🔵 Connect to DB
@@ -30,7 +30,8 @@ app.get("/test", (req, res) => {
   res.send("Backend is running");
 });
 
-// 🔵 INSERT student
+
+
 app.post("/students", (req, res) => {
   const { roll_no, name, department } = req.body;
 
@@ -51,6 +52,8 @@ app.post("/students", (req, res) => {
 app.put("/students/update", (req, res) => {
   console.log("UPDATE API HIT");
   console.log("BODY:", req.body);
+
+// 🟢 READ – Display all students  ⭐ NEW
 
   const { roll_no, name, department } = req.body;
 
@@ -75,6 +78,20 @@ app.put("/students/update", (req, res) => {
     }
   });
 });
+app.get("/students", (req, res) => {
+  const sql = "SELECT * FROM students";
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Fetch Error:", err);
+      res.status(500).json({ message: "Failed to fetch students" });
+    } else {
+      res.json(result);
+    }
+  });
+});
+
+
 
 // 🔵 Start server
 app.listen(5000, () => {
