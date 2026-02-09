@@ -47,16 +47,38 @@ app.post("/students", (req, res) => {
     }
   });
 });
+app.post("/delete", (req, res) => {
+  const { roll_no } = req.body;
 
-// 🔵 UPDATE student (FINAL + DEBUG)
+  db.query(
+    "SELECT * FROM students WHERE roll_no = ?", 
+    [roll_no],
+    (err, result) => {
+      if (err) return res.status(500).send(err);
+
+      if (result.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const deletedRecord = result[0];
+
+      db.query(
+        "DELETE FROM students WHERE roll_no = ?",
+        [roll_no],
+        (err) => {
+          if (err) return res.status(500).send(err);
+
+          res.json(deletedRecord);
+        }
+      );
+    }
+  );
+});
+
+// 🟢 READ – Display all students  ⭐ NEW
 app.put("/students/update", (req, res) => {
   console.log("UPDATE API HIT");
   console.log("BODY:", req.body);
-
-// 🟢 READ – Display all students  ⭐ NEW
-
-  const { roll_no, name, department } = req.body;
-
   const sql = `
     UPDATE students
     SET name = ?, department = ?
@@ -89,11 +111,9 @@ app.get("/students", (req, res) => {
       res.json(result);
     }
   });
+
 });
 
-
-
-// 🔵 Start server
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
