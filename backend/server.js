@@ -11,7 +11,7 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "tree123",
+  password: "tree",
   database: "college"
 });
 
@@ -50,11 +50,11 @@ app.post("/students", (req, res) => {
   });
 });
 app.post("/delete", (req, res) => {
-  const { username } = req.body;
+  const { roll_no } = req.body;
 
   db.query(
-    "SELECT * FROM students WHERE username = ?", 
-    [username],
+    "SELECT * FROM students WHERE roll_no = ?", 
+    [roll_no],
     (err, result) => {
       if (err) return res.status(500).send(err);
 
@@ -65,8 +65,8 @@ app.post("/delete", (req, res) => {
       const deletedRecord = result[0];
 
       db.query(
-        "DELETE FROM students WHERE username = ?",
-        [username],
+        "DELETE FROM students WHERE roll_no = ?",
+        [roll_no],
         (err) => {
           if (err) return res.status(500).send(err);
 

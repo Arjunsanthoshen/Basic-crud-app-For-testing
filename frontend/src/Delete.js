@@ -4,10 +4,9 @@ import { useState } from "react";
 import axios from "axios";  
 function Delete() {
   const [form, setForm] = useState({
-    username: "",
+    roll_no: "",
     name: "",
-    branch: "",
-    year: ""
+    department: ""
   });
 
   const [deletedData, setDeletedData] = useState(null); 
@@ -28,7 +27,7 @@ function Delete() {
     try {
       const response = await axios.post(
         "http://localhost:5000/delete", 
-        { username: form.username }
+        { roll_no: form.roll_no }
       );
 
       setDeletedData(response.data);  
@@ -47,9 +46,9 @@ function Delete() {
       <form className="delete-form" onSubmit={handleSubmit}>
         <input
           type="text"
-          name="username"
-          value={form.username}
-          placeholder="Username"
+          name="roll_no"
+          value={form.roll_no}
+          placeholder="roll_no"
           onChange={handleChange}
         />
 
@@ -59,10 +58,9 @@ function Delete() {
       {deletedData && (
         <div className="deleted-info">
           <h3>Deleted Record</h3>
-          <p>Username: {deletedData.username}</p>
+          <p>Username: {deletedData.roll_no}</p>
           <p>Name: {deletedData.name}</p>
-          <p>Branch: {deletedData.branch}</p>
-          <p>Year: {deletedData.year}</p>
+          <p>Department: {deletedData.department}</p>
         </div>
       )}
       <Link to="/" className="link">
