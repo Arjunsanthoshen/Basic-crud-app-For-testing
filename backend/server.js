@@ -1,39 +1,46 @@
-const mysql = require("mysql2");
 const express = require("express");
+const mysql = require("mysql2");
 const cors = require("cors");
 
 const app = express();
 
-// 🔵 Middleware (MUST be before routes)
+// -------------------- MIDDLEWARE --------------------
 app.use(cors());
 app.use(express.json());
 
-// 🔵 Database connection
-const db = mysql.createConnection({
+// -------------------- DATABASE (POOL) --------------------
+const db = mysql.createPool({
   host: "localhost",
   user: "root",
   password: "tree",
-  database: "college"
+  database: "college",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-// 🔵 Connect to DB
-db.connect((err) => {
+// Test DB connection
+db.getConnection((err, connection) => {
   if (err) {
     console.log("Database connection failed:", err);
   } else {
-    console.log("Connected to MariaDB!");
+    console.log("Connected to MariaDB (pool)!");
+    connection.release();
   }
 });
 
-// 🔵 Test route
+// -------------------- TEST ROUTE --------------------
 app.get("/test", (req, res) => {
   res.send("Backend is running");
 });
 
-
-
+// -------------------- CREATE (INSERT) --------------------
 app.post("/students", (req, res) => {
   const { roll_no, name, department } = req.body;
+
+  if (!roll_no || !name || !department) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
   const sql =
     "INSERT INTO students (roll_no, name, department) VALUES (?, ?, ?)";
@@ -41,44 +48,38 @@ app.post("/students", (req, res) => {
   db.query(sql, [roll_no, name, department], (err) => {
     if (err) {
       console.log("Insert Error:", err);
-      res.status(500).json({ message: "Insert failed" });
-    } else {
-      res.json({ message: "Student inserted successfully" });
+      return res.status(500).json({ message: "Insert failed" });
     }
+
+    res.json({ message: "Student inserted successfully" });
   });
 });
-app.post("/delete", (req, res) => {
-  const { roll_no } = req.body;
 
-  db.query(
-    "SELECT * FROM students WHERE roll_no = ?", 
-    [roll_no],
-    (err, result) => {
-      if (err) return res.status(500).send(err);
+// -------------------- READ (DISPLAY ALL) --------------------
+app.get("/students", (req, res) => {
+  const sql = "SELECT * FROM students";
 
-      if (result.length === 0) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const deletedRecord = result[0];
-
-      db.query(
-        "DELETE FROM students WHERE roll_no = ?",
-        [roll_no],
-        (err) => {
-          if (err) return res.status(500).send(err);
-
-          res.json(deletedRecord);
-        }
-      );
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.log("Fetch Error:", err);
+      return res.status(500).json({ message: "Failed to fetch students" });
     }
-  );
+
+    res.json(result);
+  });
 });
 
-// 🟢 READ – Display all students  ⭐ NEW
+// -------------------- UPDATE --------------------
 app.put("/students/update", (req, res) => {
   console.log("UPDATE API HIT");
   console.log("BODY:", req.body);
+
+  const { roll_no, name, department } = req.body;
+
+  if (!roll_no || !name || !department) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
   const sql = `
     UPDATE students
     SET name = ?, department = ?
@@ -88,32 +89,53 @@ app.put("/students/update", (req, res) => {
   db.query(sql, [name, department, roll_no], (err, result) => {
     if (err) {
       console.log("Update Error:", err);
-      res.status(500).json({ message: "Update failed" });
-    } else {
-      console.log("Affected rows:", result.affectedRows);
+      return res.status(500).json({ message: "Update failed" });
+    }
 
-      if (result.affectedRows === 0) {
-        res.json({ message: "No student found with that roll number" });
-      } else {
-        res.json({ message: "Student updated successfully" });
+    console.log("Affected rows:", result.affectedRows);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "No student found with that roll number" });
+    }
+
+    res.json({ message: "Student updated successfully" });
+  });
+});
+
+// -------------------- DELETE --------------------
+app.post("/delete", (req, res) => {
+  const { roll_no } = req.body;
+
+  if (!roll_no) {
+    return res.status(400).json({ message: "Roll number is required" });
+  }
+
+  db.query(
+    "SELECT * FROM students WHERE roll_no = ?",
+    [roll_no],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+
+      if (result.length === 0) {
+        return res.status(404).json({ message: "Student not found" });
       }
+
+      const deletedRecord = result[0];
+
+      db.query(
+        "DELETE FROM students WHERE roll_no = ?",
+        [roll_no],
+        (err) => {
+          if (err) return res.status(500).json(err);
+
+          res.json(deletedRecord);
+        }
+      );
     }
-  });
-});
-app.get("/students", (req, res) => {
-  const sql = "SELECT * FROM students";
-
-  db.query(sql, (err, result) => {
-    if (err) {
-      console.log("Fetch Error:", err);
-      res.status(500).json({ message: "Failed to fetch students" });
-    } else {
-      res.json(result);
-    }
-  });
-
+  );
 });
 
+// -------------------- SERVER --------------------
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
